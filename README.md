@@ -1,40 +1,47 @@
 # SVDC
 
-# Dashboard Analítico Interativo
+# 🦠 Dashboard Analítico: Visão Global COVID-19
 
-[![Aceder ao Dashboard Ao Vivo](https://img.shields.io/badge/Aceder_ao_Dashboard-Ao_Vivo-2ecc71?style=for-the-badge)](INSERIR_LINK_DO_GITHUB_PAGES_AQUI)
-
-## Sobre o Projeto
-Este projeto foi desenvolvido como método de avaliação para a disciplina de Sistemas de Visualização de Dados e Conhecimento. O objetivo principal é transformar dados em bruto num dashboard interativo que permita aos decisores extrair insights rápidos e acionáveis.
-
-O dataset analisado foca-se em **[Inserir tema: ex: Vendas de Retalho / Dados de Recursos Humanos]**, e a aplicação permite filtrar a visualização globalmente por **[Inserir categoria de filtro: ex: País / Departamento]**.
-
-## Funcionalidades e Visualizações
-
-O dashboard é composto por 5 visualizações principais, totalmente dinâmicas e responsivas:
-
-1. **KPIs Executivos (Cartões):** Apresentam as métricas de topo (Valor Total, Volume, Média e Variedade).
-2. **Evolução Temporal (Gráfico de Linhas):** Ilustra a tendência de [Métrica X] ao longo do tempo.
-3. **Top 10 Categorias (Gráfico de Barras Horizontais):** Destaca os elementos com melhor performance de forma decrescente.
-4. **Distribuição Percentual (Gráfico Circular/Donut):** Mostra o peso de cada [Métrica Y] no total.
-5. **Relação de Variáveis (Gráfico de Dispersão):** Analisa a correlação entre [Coluna X] e [Coluna Y], limitado a uma amostra otimizada para garantir alta performance no navegador.
-
-Além disso, inclui uma **Tabela de Dados Dinâmica** que lista o Top 15 dos registos mais valiosos.
-
-## Tecnologias Utilizadas
-
-* **HTML5 & CSS3:** Estruturação do layout, tipografia e sistema de *Grid/Flexbox* para design responsivo.
-* **JavaScript (ES6):** Lógica de limpeza de dados (*Data Wrangling*), cálculo de métricas matemáticas e eventos de interatividade (*Tooltips*, filtros globais).
-* **D3.js (v7):** Biblioteca principal utilizada para manipulação do DOM e renderização de ficheiros vetoriais (SVG) com base nos dados ingeridos (*Data-Driven Documents*).
-
-## Como executar o projeto localmente
-
-Caso pretenda correr o projeto na sua máquina em vez de utilizar o link ao vivo:
-
-1. Faça o clone deste repositório ou descarregue o ficheiro `.zip`.
-2. Abra a pasta do projeto num editor de código (recomenda-se o Visual Studio Code).
-3. Devido a políticas de segurança CORS dos navegadores para ficheiros locais, inicie um servidor local. Pode utilizar a extensão **Live Server** no VS Code.
-4. O dashboard abrirá automaticamente no seu navegador predefinido (geralmente em `http://127.0.0.1:5500/`).
+[![Live Demo](https://img.shields.io/badge/Ver_Dashboard_ao_Vivo-blue?style=for-the-badge)](https://[teu-username].github.io/[nome-do-repositorio]/)  
+*(Clique no botão acima para aceder ao dashboard interativo)*
 
 ---
-*Projeto desenvolvido por PG60289 - Pedro Gomes.*
+
+## 1. Passos de Transformação do Dataset
+O dataset original sofreu um processo de limpeza e redução estrutural no Excel para otimizar o tempo de carregamento no navegador, e um tratamento dinâmico no D3.js:
+
+* **Remoção de Agregados:** Eliminação de linhas que não correspondiam a países reais (ex: "World", "Europe", "High income"), filtrando pelas células vazias na coluna `continent`.
+* **Redução de Dimensionalidade:** Das mais de 60 colunas originais, retive apenas 7 cruciais para a nossa análise: `country`, `date`, `new_cases`, `new_deaths`, `population`, `gdp_per_capita` e `median_age`.
+* **Formatação Delimitadora e Temporal:** Ajuste do separador para ponto e vírgula (`;`) e uniformização das datas para o padrão `DD/MM/YYYY`.
+* **Limpeza Dinâmica (D3.js):** O algoritmo Javascript foi programado para detetar falhas de reporte (células vazias) em dias específicos e preenchê-las assumindo o valor `0`, garantindo que os gráficos de evolução temporal não sofrem quebras na renderização.
+
+## 2. Objetivos Detalhados e *Insights*
+O objetivo deste dashboard em D3.js não é apenas mostrar o volume da COVID-19, mas sim comunicar visualmente correlações ocultas entre a propagação da doença, a economia e a demografia.
+
+Os principais *insights* a comunicar e a forma de os alcançar:
+
+* **Mensagem 1: A gravidade real vs Volume absoluto.**
+  * *Como alcançamos:* Uso de um Gráfico de Dispersão duplo-logarítmico (Mortes vs Casos). Isto permite comparar a verdadeira taxa de mortalidade e o sucesso na gestão da pandemia de cada país, retirando o "esmagamento visual" provocado por países gigantes como a Índia ou os EUA.
+* **Mensagem 2: A riqueza protege contra a infeção?**
+  * *Como alcançamos:* Cruzamento do PIB *per capita* com os Casos por Milhão através de um Gráfico de Bolhas. Aplicou-se uma escala logarítmica no Eixo X (Riqueza) para distribuir harmoniosamente os países e evidenciar se países mais ricos testaram/detetaram mais casos. O raio reflete a população.
+* **Mensagem 3: O peso da demografia na letalidade.**
+  * *Como alcançamos:* Através de uma técnica de *Binning* (agrupamento), categorizámos os países em 3 faixas etárias baseadas na sua idade média (< 25 anos, 25-40 anos, > 40 anos). O gráfico de barras resultante pondera o total real de mortes a dividir pelo total de casos de cada grupo estatístico, confirmando a correlação letal do vírus em populações envelhecidas.
+* **Mensagem 4: Impacto geográfico e progressão temporal.**
+  * *Como alcançamos:* Implementação de um Gráfico de Barras dinâmico (Top 10) suportado pelo método `.nice()` e um Gráfico de Linhas agregado por mês (`d3.timeMonth`) para suavizar o "ruído" diário. Todo o dashboard está interligado a um filtro global por Continente.
+
+## 3. Como Reproduzir o Projeto Localmente
+Caso não utilize a versão *Live* fornecida no topo deste documento, siga estes passos:
+1. Clone este repositório para o seu computador.
+2. Certifique-se de que os ficheiros `index.html`, `script.js` e `covid_data.csv` estão na mesma pasta.
+3. Inicie um servidor HTTP local (ex: extensão *Live Server* do VS Code, ou `python -m http.server` no terminal) para contornar as restrições CORS de leitura de ficheiros locais.
+4. Abra o `index.html` no seu navegador.
+
+## 4. Resultados do Dashboard
+Abaixo encontram-se capturas de ecrã das visualizações desenvolvidas:
+
+![](visaoGlobal.png) 
+![](visao2.png)
+![](visao3.png)
+![](visao4.png)
+![](visao5.png)
+
