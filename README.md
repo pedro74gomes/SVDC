@@ -2,11 +2,6 @@
 
 # 🦠 Dashboard Analítico: Visão Global COVID-19
 
-[![Live Demo](https://img.shields.io/badge/Ver_Dashboard_ao_Vivo-blue?style=for-the-badge)](https://[teu-username].github.io/[nome-do-repositorio]/)  
-*(Clique no botão acima para aceder ao dashboard interativo)*
-
----
-
 ## 1. Passos de Transformação do Dataset
 O dataset original sofreu um processo de limpeza e redução estrutural no Excel para otimizar o tempo de carregamento no navegador, e um tratamento dinâmico no D3.js:
 
