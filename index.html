@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analítico - COVID-19</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 30px; color: #333; }
+        h1 { font-size: 24px; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #e74c3c; padding-bottom: 10px; display: inline-block; }
+        
+        .controls { background: white; padding: 15px 25px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; }
+        .controls label { font-weight: bold; font-size: 14px; color: #34495e; }
+        .controls select { padding: 8px 12px; border-radius: 5px; border: 1px solid #ddd; outline: none; cursor: pointer; background: #fff; min-width: 150px; }
+
+        .kpi-grid { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .kpi-card { background: white; padding: 25px; border-radius: 10px; flex: 1; min-width: 200px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #e74c3c; transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-5px); }
+        .kpi-card.dark-red { border-left-color: #c0392b; }
+        .kpi-card.orange { border-left-color: #e67e22; }
+        .kpi-card.grey { border-left-color: #7f8c8d; }
+        .kpi-card h3 { margin: 0; font-size: 13px; color: #7f8c8d; text-transform: uppercase; }
+        .kpi-card p { margin: 10px 0 0; font-size: 28px; font-weight: bold; color: #2c3e50; }
+        
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .chart-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .chart-box h2 { font-size: 16px; color: #34495e; margin-bottom: 15px; }
+        .full-width { grid-column: 1 / -1; }
+
+        .tooltip { position: absolute; padding: 12px; background: rgba(255, 255, 255, 0.95); border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 6px; pointer-events: none; opacity: 0; z-index: 1000; font-size: 13px; }
+        .grid line { stroke: #e0e0e0; stroke-opacity: 0.7; }
+
+        /* Estilos da Tabela Dinâmica */
+        .table-container { overflow-x: auto; max-height: 300px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f4f6f9; color: #2c3e50; position: sticky; top: 0; z-index: 1; }
+        tr:hover { background-color: #f1f8ff; }
+        
+        /* Responsividade Básica para ecrãs mais pequenos */
+        @media (max-width: 900px) {
+            .chart-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Visão Global COVID-19</h1>
+
+    <div class="controls">
+        <label for="filter-select">Filtrar por Continente:</label>
+        <select id="filter-select">
+            <option value="all">Mundo (Todos os Continentes)</option>
+        </select>
+    </div>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <h3>Total Casos</h3>
+            <p id="kpi-1">0</p>
+        </div>
+        <div class="kpi-card dark-red">
+            <h3>Total Mortes</h3>
+            <p id="kpi-2">0</p>
+        </div>
+        <div class="kpi-card orange">
+            <h3>Taxa Letalidade</h3>
+            <p id="kpi-3">0%</p>
+        </div>
+        <div class="kpi-card grey">
+            <h3>Países Analisados</h3>
+            <p id="kpi-4">0</p>
+        </div>
+    </div>
+
+    <!-- Linha 1: Gráficos Principais -->
+    <div class="chart-grid">
+        <div class="chart-box full-width">
+            <h2>Evolução Temporal (Novos Casos)</h2>
+            <div id="chart-linha"></div>
+        </div>
+        <div class="chart-box">
+            <h2>Top 10 Países (Mais Casos)</h2>
+            <div id="chart-barras"></div>
+        </div>
+        <div class="chart-box">
+            <h2>Distribuição de Casos por Continente</h2>
+            <div id="chart-circular"></div>
+        </div>
+    </div>
+
+    <!-- Linha 2: Análise Profunda -->
+    <div class="chart-grid">
+        <div class="chart-box">
+            <h2>Correlação: Mortes vs Casos</h2>
+            <div id="chart-dispersao"></div>
+        </div>
+        <div class="chart-box">
+            <h2 id="titulo-tabela">Top 15 Países (Detalhe Absoluto)</h2>
+            <div id="tabela-dados" class="table-container"></div>
+        </div>
+    </div>
+
+    <!-- Linha 3: Análise Demográfica e Económica -->
+    <div class="chart-grid">
+        <div class="chart-box full-width">
+            <h2>Riqueza vs Infeção (PIB per capita vs Casos por Milhão)</h2>
+            <div id="chart-bolhas"></div>
+        </div>
+        <div class="chart-box">
+            <h2>Letalidade por Faixa Etária (Idade média)</h2>
+            <div id="chart-idade"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
