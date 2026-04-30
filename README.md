@@ -40,3 +40,4 @@ Abaixo encontram-se capturas de ecrã das visualizações desenvolvidas:
 ![](visao4.png)
 ![](visao5.png)
 
+PG60289 - Pedro Gomes.
